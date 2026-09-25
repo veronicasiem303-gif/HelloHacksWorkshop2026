@@ -3,15 +3,33 @@ import { useState } from 'react'
 function App() {
   const [selectedType, setSelectedType] = useState('')
 
-  function getMatchup(type) {
-    //CALL THE BACKEND (API)
-    //API CALL WILL GO HERE, AND WE WILL RETURN THE RESPONSE
-  return `Fake API response: You are fighting a ${type}-type Pokémon.`;
-}
+  async function getMatchup(type) {
+    try {
+      const response = await fetch(`http://localhost:3000/api/type/${type.toLowerCase()}`)
 
-function handleTypeClick(type) {
-  const response = getMatchup(type);
-  setResult(response);
+      if (!response.ok) {
+        throw new Error(`Request failed with status ${response.status}`)
+      }
+
+      return await response.json()
+    } catch (error) {
+      console.error('Unable to get matchup:', error)
+      return { error: 'Unable to get matchup data.' }
+    }
+  }
+
+  async function handleTypeClick(type) {
+    const response = await getMatchup(type)
+
+    if (response.error) {
+      setSelectedType(response.error)
+      return
+    }
+
+    setSelectedType(
+      `Your ${type} moves deal half damage to ${response.half_damage_to.join(', ')}. Your ${type} Pokemon takes double damage from ${response.double_damage_from.join(', ')}.`,
+    )
+  }
 
   return (
     <main className="min-h-screen bg-[#f8f5ed] px-5 py-10 text-[#252525] sm:px-8">
@@ -41,10 +59,10 @@ function handleTypeClick(type) {
             ['Grass', '🌿', 'bg-[#66bb6a]'],
             ['Ground', '⛰️', 'bg-[#c99455]'],
           ].map(([type, icon, color]) => (
-            <onClick={() => handleTypeClick(type.name)}
+            <button
               className={`group flex min-h-32 flex-col items-start justify-between rounded-2xl border-2 border-[#252525] p-4 text-left shadow-[3px_3px_0_#252525] transition-transform hover:-translate-y-1 focus:outline-none focus:ring-4 focus:ring-[#f4c542]/70 ${color}`}
               key={type}
-              onClick={() => setSelectedType(type)}
+              onClick={() => handleTypeClick(type)}
               type="button"
             >
               <span className="text-3xl" aria-hidden="true">{icon}</span>
