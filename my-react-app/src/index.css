@@ -1,0 +1,9 @@
+@import "tailwindcss";
+
+@theme {
+	--font-sans: "Trebuchet MS", "Avenir Next", sans-serif;
+}
+
+body {
+	margin: 0;
+}
